@@ -29,10 +29,13 @@ import androidx.compose.ui.unit.dp
 
 /**
  * 旧系统里"开始测量"/"退出操作"/"确认结果"这些按钮几乎是同一种浅色圆角药丸样式，
- * 没有强烈的"实心色块 vs 描边"对比，靠文字本身表达含义。这里统一成同一种浅底样式，
- * 只用文字颜色/字重做很轻的主次提示，贴近参考截图的观感。
+ * 全靠文字本身表达含义。早期复刻照搬了这一点，结果是"确认结果"和"重新测量"在屏幕上
+ * 完全看不出主次——对着一体机、又多半没戴老花镜的用户来说，这一步要先读完两行字才能决定点哪个。
+ *
+ * 所以这里给主按钮改回实心色块、次按钮保持描边：形状不变、位置不变、文案不变，
+ * 只把"哪个是默认操作"用颜色一眼交代清楚。
  */
-private val ButtonHeight = 56.dp
+private val ButtonHeight = 64.dp
 private val ButtonShape = RoundedCornerShape(percent = 50)
 
 /**
@@ -50,9 +53,10 @@ fun PrimaryActionButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val scale by rememberPressScale(interactionSource)
-    val containerColor by rememberPressDarken(interactionSource, MaterialTheme.colorScheme.surface, darkenFactor = 0.06f)
+    val baseColor = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val containerColor by rememberPressDarken(interactionSource, baseColor, darkenFactor = 0.10f)
     val contentColor = if (enabled) {
-        MaterialTheme.colorScheme.primary
+        MaterialTheme.colorScheme.onPrimary
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
     }
@@ -69,7 +73,6 @@ fun PrimaryActionButton(
             ),
         shape = ButtonShape,
         color = containerColor,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (enabled) 0.4f else 0.15f)),
     ) {
         Row(
             Modifier.fillMaxSize().padding(horizontal = 28.dp),
@@ -90,7 +93,7 @@ fun PrimaryActionButton(
                     Spacer(Modifier.width(8.dp))
                 }
             }
-            Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = contentColor)
+            Text(text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = contentColor)
         }
     }
 }
@@ -124,14 +127,14 @@ fun SecondaryActionButton(
             ),
         shape = ButtonShape,
         color = containerColor,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
     ) {
         Row(
             Modifier.fillMaxSize().padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(text, style = MaterialTheme.typography.titleMedium, color = contentColor)
+            Text(text, style = MaterialTheme.typography.titleLarge, color = contentColor)
         }
     }
 }

@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -77,29 +75,6 @@ fun PartStepper(
                 }
                 Spacer(Modifier.height(Spacing.xs))
                 Text(part.label, style = MaterialTheme.typography.labelLarge)
-            }
-        }
-    }
-}
-
-@Composable
-fun ResultValueRow(
-    label: String,
-    value: String,
-    unit: String,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            if (unit.isNotEmpty()) {
-                Spacer(Modifier.width(6.dp))
-                Text(unit, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

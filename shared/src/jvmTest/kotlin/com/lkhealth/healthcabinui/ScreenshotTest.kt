@@ -17,7 +17,12 @@ import com.lkhealth.healthcabinui.directory.MockUserDirectoryApi
 import com.lkhealth.healthcabinui.session.AppViewModel
 import com.lkhealth.healthcabinui.ui.components.HealthCabinTopBar
 import com.lkhealth.healthcabinui.ui.items.ItemSelectionScreen
+import com.lkhealth.healthcabinui.ui.measurement.PrepareScreen
+import com.lkhealth.healthcabinui.ui.measurement.ResultScreen
+import com.lkhealth.healthcabinui.ui.report.ReportSummaryScreen
 import com.lkhealth.healthcabinui.ui.theme.HealthCabinTheme
+import com.lkhealth.healthcabinui.ui.welcome.WelcomeScreen
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 import kotlin.test.Test
@@ -39,6 +44,51 @@ class ScreenshotTest {
         resolutions.forEach { (w, h) ->
             capture("item_selection_${w}x$h", w, h) {
                 KioskFrame(userLabel = "游客体验") { ItemSelectionScreen(viewModel) }
+            }
+        }
+    }
+
+    /**
+     * 结果页/报告页：带参考范围判定与健康建议的状态。用 Mock 目录里的"张三（男，36 岁）"登录，
+     * 因为体脂率、基础代谢这些指标的参考范围要分性别/年龄档，游客模式下取不到范围。
+     */
+    @Test
+    fun resultsWithReferenceRanges() {
+        val viewModel = AppViewModel(MockDeviceServiceApi(), MockUserDirectoryApi()).apply {
+            runBlocking { performLookup("110101199001011234") }
+            onMeasurementCompleted(
+                DeviceType.BLOOD_PRESSURE,
+                DeviceServiceSession("s1", DeviceType.BLOOD_PRESSURE, mapOf("systolic" to 152.0, "diastolic" to 95.0, "pulse" to 72.0)),
+            )
+            onMeasurementCompleted(
+                DeviceType.HEIGHT_WEIGHT,
+                DeviceServiceSession("s2", DeviceType.HEIGHT_WEIGHT, mapOf("height" to 172.0, "weight" to 85.0, "bmi" to 28.7)),
+            )
+            onMeasurementCompleted(
+                DeviceType.BODY_FAT,
+                DeviceServiceSession("s3", DeviceType.BODY_FAT, mapOf("bodyFatPercent" to 28.4, "bmr" to 1280.0)),
+            )
+        }
+        resolutions.forEach { (w, h) ->
+            capture("result_blood_pressure_${w}x$h", w, h) {
+                KioskFrame(userLabel = "张三") { ResultScreen(DeviceType.BLOOD_PRESSURE, viewModel) }
+            }
+            capture("report_summary_${w}x$h", w, h) {
+                KioskFrame(userLabel = "张三") { ReportSummaryScreen(viewModel) }
+            }
+        }
+    }
+
+    /** 欢迎页与准备页：主要用来确认主按钮改成实心后，其他页面的按钮对比没有过头。 */
+    @Test
+    fun welcomeAndPrepare() {
+        val viewModel = AppViewModel(MockDeviceServiceApi(), MockUserDirectoryApi())
+        resolutions.forEach { (w, h) ->
+            capture("welcome_${w}x$h", w, h) {
+                KioskFrame(userLabel = null) { WelcomeScreen(viewModel) }
+            }
+            capture("prepare_blood_pressure_${w}x$h", w, h) {
+                KioskFrame(userLabel = "张三") { PrepareScreen(DeviceType.BLOOD_PRESSURE, viewModel) }
             }
         }
     }

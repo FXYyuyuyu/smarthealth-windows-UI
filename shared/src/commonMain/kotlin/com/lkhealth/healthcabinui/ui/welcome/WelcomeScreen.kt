@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -66,10 +68,13 @@ fun WelcomeScreen(viewModel: AppViewModel) {
         verticalArrangement = Arrangement.Center,
     ) {
         // 宽度对齐下方四张入口卡片整行的宽度（4×160dp + 3×24dp 间距 = 712dp）。
+        // weight(fill = false) 让插画只占剩下的空间：1366×768 这类"宽而矮"的一体机屏上，
+        // 固定尺寸会把下面的"游客体验"整个顶出屏幕，这里改成屏幕矮时插画自己等比缩小。
         Image(
             painter = painterResource(Res.drawable.welcome_nurse),
             contentDescription = "欢迎您测量，请将身份证对准读卡区或点击输入身份证号/手机号",
-            modifier = Modifier.width(712.dp),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.widthIn(max = 712.dp).weight(1f, fill = false),
         )
         Spacer(Modifier.height(Spacing.l))
 

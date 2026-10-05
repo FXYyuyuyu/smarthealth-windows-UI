@@ -26,6 +26,23 @@ object HealthCabinColors {
     val Error = Color(0xFFC2666B)
     val Outline = Color(0xFFDADFE5)
 
+    /**
+     * 指标判定用色：偏高用暖色、偏低用冷色、正常用绿色。
+     * 这三种颜色在界面上一律与"偏高/偏低/正常"文字标签同时出现，不单靠颜色传达状态——
+     * 一体机用户里中老年人占多数，色觉衰退和红绿色弱的比例都不低。
+     */
+    object Prompt {
+        val High = Color(0xFFB5705C)
+        val HighContainer = Color(0xFFF6EAE4)
+        val Low = Color(0xFF5878A0)
+        val LowContainer = Color(0xFFE7EDF4)
+        val Normal = Color(0xFF4F9271)
+        val NormalContainer = Color(0xFFE6F0EA)
+        /** 参考范围条的底色（整条轴）与正常区间底色。 */
+        val BarTrack = Color(0xFFE8ECF0)
+        val BarNormalZone = Color(0xFFCADFD2)
+    }
+
     /** 每个检测项目的强调色，统一收敛在同一明度/纯度区间内、只在色相上区分。 */
     object ItemAccent {
         val HeightWeight = Color(0xFF4F8C93)

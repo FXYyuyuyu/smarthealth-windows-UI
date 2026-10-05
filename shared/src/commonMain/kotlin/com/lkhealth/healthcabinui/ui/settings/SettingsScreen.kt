@@ -34,7 +34,6 @@ import com.lkhealth.healthcabinui.ui.theme.Spacing
 /** 对应旧系统 SetDeviceUC/SetModeUC：开关型设置合并到一处，关机/重启在示例环境中保留入口但不执行真实操作。 */
 @Composable
 fun SettingsScreen(viewModel: AppViewModel) {
-    val autoNextItem by viewModel.autoNextItem.collectAsStateWithLifecycle()
     val printEnabled by viewModel.printEnabled.collectAsStateWithLifecycle()
     val faceLoginEnabled by viewModel.faceLoginEnabled.collectAsStateWithLifecycle()
     val guestModeEnabled by viewModel.guestModeEnabled.collectAsStateWithLifecycle()
@@ -48,8 +47,6 @@ fun SettingsScreen(viewModel: AppViewModel) {
         // 开关项可能超出较矮窗口的高度，单独滚动，确保底部"返回"按钮始终可见可点。
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             SectionCard(modifier = Modifier.fillMaxWidth()) {
-                SettingToggleRow("自动进入下一项", "确认结果后自动跳转到下一个未完成项目", autoNextItem, viewModel::setAutoNextItem)
-                HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.m))
                 SettingToggleRow("打印功能", "检测报告页展示\"发起打印\"按钮", printEnabled, viewModel::setPrintEnabled)
                 HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.m))
                 SettingToggleRow("语音播报", "在测量/结果等关键步骤播放语音指导", voiceEnabled, viewModel::setVoiceEnabled)

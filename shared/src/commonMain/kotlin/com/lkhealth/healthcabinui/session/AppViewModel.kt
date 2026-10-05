@@ -51,9 +51,6 @@ class AppViewModel(
 
     // ---- 系统设置（对应旧系统 SetDeviceUC/SetModeUC 的开关型配置） ----
 
-    private val _autoNextItem = MutableStateFlow(true)
-    val autoNextItem: StateFlow<Boolean> = _autoNextItem.asStateFlow()
-
     private val _printEnabled = MutableStateFlow(true)
     val printEnabled: StateFlow<Boolean> = _printEnabled.asStateFlow()
 
@@ -66,7 +63,6 @@ class AppViewModel(
     private val _voiceEnabled = MutableStateFlow(true)
     val voiceEnabled: StateFlow<Boolean> = _voiceEnabled.asStateFlow()
 
-    fun setAutoNextItem(enabled: Boolean) { _autoNextItem.value = enabled }
     fun setPrintEnabled(enabled: Boolean) { _printEnabled.value = enabled }
     fun setFaceLoginEnabled(enabled: Boolean) { _faceLoginEnabled.value = enabled }
     fun setGuestModeEnabled(enabled: Boolean) { _guestModeEnabled.value = enabled }
@@ -197,16 +193,13 @@ class AppViewModel(
 
     fun retryMeasurement(deviceType: DeviceType) = navigator.replaceTop(Route.Prepare(deviceType))
 
-    /** 确认结果后：若开启"自动进入下一项"且还有未完成项目，直接进入下一项的准备页；否则回项目宫格。 */
+    /**
+     * 确认结果后回项目宫格，由用户自己挑下一项——与旧系统一致。
+     * 曾经做过"自动进入下一个未完成项目"，但那不是旧系统的行为：一体机前经常是
+     * 只想测血压就走，自动把人推进下一项的准备页反而需要多点一次退出。
+     */
     fun confirmResult(deviceType: DeviceType) {
         releaseDevice(deviceType)
-        if (_autoNextItem.value) {
-            val next = visibleDeviceTypes.firstOrNull { it !in _completedResults.value.keys }
-            if (next != null) {
-                navigator.resetTo(Route.Prepare(next))
-                return
-            }
-        }
         navigator.resetTo(Route.ItemSelection)
     }
 

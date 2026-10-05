@@ -21,8 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lkhealth.healthcabinui.device.MeasurementCatalog
-import com.lkhealth.healthcabinui.device.format
+import com.lkhealth.healthcabinui.device.advices
+import com.lkhealth.healthcabinui.device.evaluate
 import com.lkhealth.healthcabinui.session.AppViewModel
+import com.lkhealth.healthcabinui.ui.components.HealthAdviceCard
 import com.lkhealth.healthcabinui.ui.components.PageHeader
 import com.lkhealth.healthcabinui.ui.components.PrimaryActionButton
 import com.lkhealth.healthcabinui.ui.components.ResultValueRow
@@ -43,11 +45,26 @@ fun ReportSummaryScreen(viewModel: AppViewModel) {
             .sortedBy { order.indexOf(it) }
             .groupBy { MeasurementCatalog.of(it).category }
     }
+    val allAdvices = remember(completedResults, currentUser) {
+        completedResults.keys
+            .flatMap { MeasurementCatalog.of(it).evaluate(completedResults[it], currentUser).advices() }
+            .distinct()
+    }
+
+    val abnormalCount = remember(completedResults, currentUser) {
+        completedResults.keys.sumOf { deviceType ->
+            MeasurementCatalog.of(deviceType).evaluate(completedResults[deviceType], currentUser).count { it.isAbnormal }
+        }
+    }
 
     Column(Modifier.fillMaxSize().padding(Spacing.xxl)) {
         PageHeader(
             title = "检测报告",
-            subtitle = "${currentUser?.name ?: "游客"} · 本次共完成 ${completedResults.size} 项检测",
+            subtitle = buildString {
+                append(currentUser?.name ?: "游客")
+                append(" · 本次共完成 ${completedResults.size} 项检测")
+                if (abnormalCount > 0) append("，其中 $abnormalCount 项指标超出参考范围")
+            },
         )
         Spacer(Modifier.height(Spacing.l))
 
@@ -65,11 +82,11 @@ fun ReportSummaryScreen(viewModel: AppViewModel) {
                 SectionCard(modifier = Modifier.fillMaxWidth()) {
                     deviceTypes.forEachIndexed { index, deviceType ->
                         val spec = MeasurementCatalog.of(deviceType)
-                        val session = completedResults[deviceType]
+                        val evaluated = spec.evaluate(completedResults[deviceType], currentUser)
                         Text(spec.gridLabel, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(Spacing.xs))
-                        spec.resultFields.forEach { field ->
-                            ResultValueRow(label = field.label, value = field.format(session), unit = field.unit)
+                        evaluated.forEach { field ->
+                            Spacer(Modifier.height(Spacing.s))
+                            ResultValueRow(field)
                         }
                         if (index != deviceTypes.lastIndex) {
                             Spacer(Modifier.height(Spacing.m))
@@ -80,8 +97,15 @@ fun ReportSummaryScreen(viewModel: AppViewModel) {
                 }
                 Spacer(Modifier.height(Spacing.l))
             }
+
+            // 全部异常项的建议汇总到报告末尾一次性给出，和旧系统纸质报告把建议集中印在最后一致。
+            if (allAdvices.isNotEmpty()) {
+                HealthAdviceCard(allAdvices)
+            }
         }
 
+        // 滚动区与按钮条之间留出间距，否则最后一行内容会紧贴按钮、看着像被切掉。
+        Spacer(Modifier.height(Spacing.l))
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(Spacing.m),
