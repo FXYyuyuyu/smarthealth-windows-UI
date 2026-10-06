@@ -73,8 +73,8 @@ fun ItemSelectionScreen(viewModel: AppViewModel) {
         val layout = remember(maxWidth, maxHeight, tiles.size) { computeGridLayout(tiles.size, maxWidth, maxHeight) }
         val labelSize = with(LocalDensity.current) {
             // 最长项目名约 8 个字（如"糖化血红蛋白测量"），按方块宽度反推字号，保证单行完整显示。
-            val fitted = ((layout.tileWidth - Spacing.m) / 9).toSp()
-            if (fitted.value < 20f) fitted else 20.sp
+            val fitted = ((layout.tileWidth - Spacing.s) / 9).toSp()
+            if (fitted.value < 26f) fitted else 26.sp
         }
         val gridModifier = if (layout.fits) Modifier.fillMaxSize() else Modifier.fillMaxSize().verticalScroll(rememberScrollState())
 
@@ -101,12 +101,26 @@ fun ItemSelectionScreen(viewModel: AppViewModel) {
     }
 }
 
-private val GridGap = 16.dp
+private val GridGap = 24.dp
 private val MinTileSide = 120.dp
-private val MaxTileWidth = 240.dp
-private val MaxTileHeight = 230.dp
-/** 方块内图标以外的固定占用：上下内边距 + 图标与文字间距 + 一行文字。 */
-private val TileChrome = 52.dp
+
+/**
+ * 方块尺寸上限。项目少的时候方块会自动撑到这个上限为止——旧系统只配 9 个项目时图标明显更大，
+ * 就是这个效果。上限不设成无穷大是因为：图标素材本身只有几百像素，拉过头会糊，
+ * 而且一行只剩三四个巨大方块时，视线要横跨整屏才能扫完，反而比适中尺寸更难找。
+ */
+private val MaxTileWidth = 300.dp
+private val MaxTileHeight = 300.dp
+
+/**
+ * 图标上限卡在素材自身的分辨率上：旧系统这套图标 PNG 只有 175×167 像素，
+ * 再往上拉就是放大糊（安卓一体机 density ≥ 2 时更明显）。想要更大的图标，
+ * 得先从原始设计稿重新导一套 2x/3x 的素材，不是改这里的数字能解决的。
+ */
+private val MaxIconSide = 176.dp
+
+/** 方块内图标以外的固定占用：图标与文字间距 + 一行文字。去掉白卡容器后不再有卡片内边距。 */
+private val TileChrome = 44.dp
 
 private data class GridLayout(
     val columns: Int,
@@ -126,7 +140,8 @@ private fun computeGridLayout(count: Int, width: Dp, height: Dp): GridLayout {
         if (w < MinTileSide || h < MinTileSide) continue
         val tileWidth = minOf(w, MaxTileWidth)
         val tileHeight = minOf(h, MaxTileHeight, tileWidth * 1.15f)
-        val icon = minOf(tileWidth * 0.62f, tileHeight - TileChrome).coerceIn(48.dp, 128.dp)
+        // 去掉白卡容器后图标可以占到方块宽度的 0.85（原来留给卡片内边距的部分省出来了）。
+        val icon = minOf(tileWidth * 0.85f, tileHeight - TileChrome).coerceIn(48.dp, MaxIconSide)
         if (best == null || icon > best.iconSize) best = GridLayout(columns, tileWidth, tileHeight, icon, fits = true)
     }
     best?.let { return it }
@@ -134,5 +149,5 @@ private fun computeGridLayout(count: Int, width: Dp, height: Dp): GridLayout {
     val columns = ((width + GridGap) / (MinTileSide + GridGap)).toInt().coerceAtLeast(1)
     val tileWidth = minOf((width - GridGap * (columns - 1)) / columns, MaxTileWidth)
     val tileHeight = minOf(tileWidth * 1.15f, MaxTileHeight)
-    return GridLayout(columns, tileWidth, tileHeight, (tileHeight - TileChrome).coerceIn(48.dp, 128.dp), fits = false)
+    return GridLayout(columns, tileWidth, tileHeight, (tileHeight - TileChrome).coerceIn(48.dp, MaxIconSide), fits = false)
 }

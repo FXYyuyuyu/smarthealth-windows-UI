@@ -16,6 +16,7 @@ import com.lkhealth.healthcabinui.device.MockDeviceServiceApi
 import com.lkhealth.healthcabinui.directory.MockUserDirectoryApi
 import com.lkhealth.healthcabinui.session.AppViewModel
 import com.lkhealth.healthcabinui.ui.components.HealthCabinTopBar
+import com.lkhealth.healthcabinui.ui.identity.GuestProfileScreen
 import com.lkhealth.healthcabinui.ui.items.ItemSelectionScreen
 import com.lkhealth.healthcabinui.ui.measurement.PrepareScreen
 import com.lkhealth.healthcabinui.ui.measurement.ResultScreen
@@ -75,6 +76,45 @@ class ScreenshotTest {
             }
             capture("report_summary_${w}x$h", w, h) {
                 KioskFrame(userLabel = "张三") { ReportSummaryScreen(viewModel) }
+            }
+        }
+    }
+
+    /**
+     * 项目宫格在"只买了几个项目"的配置下的样子。
+     * 宫格会按可用空间自动选列数并把方块撑到上限，所以项目越少图标越大——
+     * 这一组截图就是用来确认这个自适应确实生效、以及上限设得合不合适。
+     */
+    @Test
+    fun itemSelectionReducedConfig() {
+        val reduced = listOf(
+            DeviceType.BLOOD_PRESSURE,
+            DeviceType.TEMPERATURE,
+            DeviceType.HEIGHT_WEIGHT,
+            DeviceType.BLOOD_OXYGEN,
+        )
+        val viewModel = AppViewModel(MockDeviceServiceApi(), MockUserDirectoryApi()).apply {
+            visibleDeviceTypes = reduced
+            startGuest()
+            onMeasurementCompleted(DeviceType.TEMPERATURE, DeviceServiceSession("s", DeviceType.TEMPERATURE, emptyMap()))
+        }
+        resolutions.forEach { (w, h) ->
+            capture("item_selection_reduced_${w}x$h", w, h) {
+                KioskFrame(userLabel = "游客体验") { ItemSelectionScreen(viewModel) }
+            }
+        }
+    }
+
+    /** 游客模式补填性别/年龄段。 */
+    @Test
+    fun guestProfile() {
+        val viewModel = AppViewModel(MockDeviceServiceApi(), MockUserDirectoryApi()).apply { startGuest() }
+        resolutions.forEach { (w, h) ->
+            capture("guest_profile_${w}x$h", w, h) {
+                KioskFrame(userLabel = "游客体验") { GuestProfileScreen(viewModel) }
+            }
+            capture("guest_profile_selected_${w}x$h", w, h) {
+                KioskFrame(userLabel = "游客体验") { GuestProfileScreen(viewModel, initialSex = "男", initialAgeBandIndex = 4) }
             }
         }
     }

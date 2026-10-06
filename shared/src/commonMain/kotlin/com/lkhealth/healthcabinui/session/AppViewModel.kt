@@ -89,9 +89,28 @@ class AppViewModel(
     /** 拿到一个号码后统一进入身份查询过渡态；刷卡、手动输入、扫码、人脸识别成功后都走这里。 */
     fun identifyByUid(uid: String) = navigator.push(Route.IdentityLookup(uid))
 
+    /** 游客入口：先进性别/年龄段选择页，拿到这两项才能给出分性别/年龄档的参考范围判定。 */
     fun startGuest() {
         _isGuest.value = true
         _currentUser.value = null
+        _completedResults.value = emptyMap()
+        navigator.resetTo(Route.GuestProfile)
+    }
+
+    /**
+     * 游客填完（或跳过）性别年龄后进入项目宫格。
+     *
+     * 填了就合成一份只在本次会话里存在的匿名档案，这样参考范围判定、结果页、报告页
+     * 全都走和实名用户完全一样的代码路径，不需要到处写"游客就不判定"的分支。
+     * 跳过时 [profile] 留空，分性别/年龄档的项目自然取不到范围、只显示数值。
+     */
+    fun enterAsGuest(sex: String?, age: Int?) {
+        _isGuest.value = true
+        _currentUser.value = if (sex != null && age != null) {
+            UserProfile(uid = GUEST_UID, name = "游客", sex = sex, birthday = "", phone = "", age = age, hasFaceOnFile = false)
+        } else {
+            null
+        }
         _completedResults.value = emptyMap()
         navigator.resetTo(Route.ItemSelection)
     }
@@ -213,5 +232,10 @@ class AppViewModel(
     fun idleTimeout() {
         if (navigator.current == Route.Welcome) return
         backToWelcome()
+    }
+
+    companion object {
+        /** 游客匿名档案的占位 uid；不会落库，只在本次会话内存里存在。 */
+        const val GUEST_UID = "guest"
     }
 }

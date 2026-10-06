@@ -28,6 +28,7 @@ import com.lkhealth.healthcabinui.ui.components.HealthCabinTopBar
 import com.lkhealth.healthcabinui.ui.entry.ManualEntryScreen
 import com.lkhealth.healthcabinui.ui.entry.ScanEntryScreen
 import com.lkhealth.healthcabinui.ui.face.FaceCaptureScreen
+import com.lkhealth.healthcabinui.ui.identity.GuestProfileScreen
 import com.lkhealth.healthcabinui.ui.identity.IdentityLookupScreen
 import com.lkhealth.healthcabinui.ui.identity.ProfileOnboardingScreen
 import com.lkhealth.healthcabinui.ui.items.ItemSelectionScreen
@@ -112,6 +113,7 @@ private fun RouteContent(route: Route, viewModel: AppViewModel) {
         Route.Welcome -> WelcomeScreen(viewModel)
         Route.ManualEntry -> ManualEntryScreen(viewModel)
         Route.ScanEntry -> ScanEntryScreen(viewModel)
+        Route.GuestProfile -> GuestProfileScreen(viewModel)
         is Route.FaceCapture -> FaceCaptureScreen(route.mode, route.uid, viewModel)
         is Route.IdentityLookup -> IdentityLookupScreen(route.uid, viewModel)
         is Route.ProfileOnboarding -> ProfileOnboardingScreen(route.uid, route.mode, viewModel)
